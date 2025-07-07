@@ -5,7 +5,7 @@ import "./footer.css";
 export default function Footer() {
   return (
     <footer className="footer">
-      Buit with
+      Built with
       <FontAwesomeIcon
         icon={faHeart}
         className="footer-icon"
