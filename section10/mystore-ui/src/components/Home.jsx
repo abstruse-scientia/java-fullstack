@@ -3,7 +3,6 @@ import ProductListings from "./ProductListings";
 import apiClient from "../api/apiClient";
 import { useLoaderData } from "react-router-dom";
 
-
 export default function Home() {
   const products = useLoaderData();
   return (
@@ -17,12 +16,16 @@ export default function Home() {
   );
 }
 
-export async function productsLoader(){
-      try {
-      const response = await apiClient.get("/products"); // Axios GET Request
-      return response.data
-    } catch (error) {
-      throw new Response(error.message || "Failed to fetch products.Please try again", {status: error.status || 500});
-    }
-
+export async function productsLoader() {
+  try {
+    const response = await apiClient.get("/products"); // Axios GET Request
+    return response.data;
+  } catch (error) {
+    throw new Response(
+      error.response?.data?.errorMessage ||
+        error.message ||
+        "Failed to fetch products.Please try again",
+      { status: error.status || 500 }
+    );
+  }
 }

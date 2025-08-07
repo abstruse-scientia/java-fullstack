@@ -16,21 +16,23 @@ export default function Contact() {
   useEffect(() => {
     if (actionData?.success) {
       formRef.current?.reset();
-      toast.success("Your message has been submitted successfully!")
+      toast.success("Your message has been submitted successfully!");
     }
   }, [actionData]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const userConfirmed = window.confirm("Are you sure you want to submit the form?");
+    const userConfirmed = window.confirm(
+      "Are you sure you want to submit the form?"
+    );
 
     if (userConfirmed) {
       const formData = new FormData(formRef.current);
-      submit(formData, {method: "post"});
-    }else {
-      toast.info("Form submission cancelled.")
+      submit(formData, { method: "post" });
+    } else {
+      toast.info("Form submission cancelled.");
     }
-  }
+  };
 
   const labelStyle =
     "block text-lg font-semibold text-primary dark:text-light mb-2";
@@ -68,6 +70,11 @@ export default function Contact() {
             minLength={5}
             maxLength={30}
           />
+          {actionData?.errors?.name && (
+            <p className="text-red-500 text-sm mt-1">
+              {actionData.errors.name}
+            </p>
+          )}
         </div>
 
         {/* Email and mobile Row */}
@@ -85,6 +92,11 @@ export default function Contact() {
               className={textFieldStyle}
               required
             />
+            {actionData?.errors?.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {actionData.errors.email}
+              </p>
+            )}
           </div>
 
           {/* Mobile Field */}
@@ -102,6 +114,11 @@ export default function Contact() {
               placeholder="Your Mobile Number"
               className={textFieldStyle}
             />
+            {actionData?.errors?.mobileNumber && (
+              <p className="text-red-500 text-sm mt-1">
+                {actionData.errors.mobileNumber}
+              </p>
+            )}
           </div>
         </div>
 
@@ -120,6 +137,11 @@ export default function Contact() {
             minLength={5}
             maxLength={500}
           ></textarea>
+          {actionData?.errors?.message && (
+            <p className="text-red-500 text-sm mt-1">
+              {actionData.errors.message}
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -149,10 +171,14 @@ export async function contactAction({ request, params }) {
   try {
     await apiClient.post("/contacts", contactData);
     return { success: true };
-
   } catch (error) {
+    if (error.response?.status === 400) {
+      return { success: false, errors: error.response?.data };
+    }
     throw new Response(
-      error.message || "Failed to submit your message. Please try again.",
+      error.response?.data?.errorMessage ||
+        error.message ||
+        "Failed to fetch products.Please try again",
       { status: error.status || 500 }
     );
   }
