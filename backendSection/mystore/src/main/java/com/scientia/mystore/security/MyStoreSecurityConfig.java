@@ -1,13 +1,16 @@
 package com.scientia.mystore.security;
 
+import com.scientia.mystore.filter.JWTTokenVaildatorFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -16,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,29 +46,19 @@ public class MyStoreSecurityConfig {
                 .authorizeHttpRequests((requests) -> {
                             publicPaths.forEach(path ->
                                     requests.requestMatchers(path).permitAll());
-                            requests.anyRequest().authenticated();
+                                    requests.requestMatchers("/api/v1/admin/**").hasRole("ADMIN");
+                                    requests.anyRequest().hasAnyRole("USER", "ADMIN");
                         }
                 )
+                .addFilterBefore(new JWTTokenVaildatorFilter(publicPaths), BasicAuthenticationFilter.class)
                 .formLogin(withDefaults())
                 .httpBasic(withDefaults()).build();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        var user1 = User.builder().username("priyanshu")
-                .password("$2a$10$XODPrPSBOCB4gfMMSrxYW.Qqlz3xIY9cgWVMOLaPQjGlfvVsqeM2a").roles("USER").build();
-        var user2 = User.builder().username("admin")
-                .password("$2a$10$/KhclODNYjDe6rw5C33hiOpdaezFrIMEMjbcsUZqwgLmcA5kOlWGe").roles("USER","ADMIN").build();
-        return new InMemoryUserDetailsManager(user1, user2);
-    }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        var daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        var providerManager = new ProviderManager(daoAuthenticationProvider);
+    public AuthenticationManager authenticationManager(AuthenticationProvider authenticationProvider) {
+        var providerManager = new ProviderManager(authenticationProvider);
         return providerManager;
     }
 
@@ -85,4 +80,10 @@ public class MyStoreSecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+    @Bean
+    public CompromisedPasswordChecker compromisedPasswordChecker() {
+        return new HaveIBeenPwnedRestApiPasswordChecker();
+    }
+
 }
