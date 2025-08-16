@@ -1,10 +1,7 @@
 package com.scientia.mystore.controller;
 
 
-import com.scientia.mystore.dto.LoginRequestDto;
-import com.scientia.mystore.dto.LoginResponseDto;
-import com.scientia.mystore.dto.RegisterRequestDto;
-import com.scientia.mystore.dto.UserDto;
+import com.scientia.mystore.dto.*;
 import com.scientia.mystore.entity.Customer;
 import com.scientia.mystore.entity.Role;
 import com.scientia.mystore.repository.CustomerRepository;
@@ -59,6 +56,11 @@ public class AuthController {
             BeanUtils.copyProperties(loggedInUser, userDto);
             userDto.setRoles(authentication.getAuthorities().stream().map(
                     GrantedAuthority::getAuthority).collect(Collectors.joining(",")));
+            if (loggedInUser.getAddress() != null) {
+                AddressDto addressDto = new AddressDto();
+                BeanUtils.copyProperties(loggedInUser.getAddress(), addressDto);
+                userDto.setAddress(addressDto);
+            }
             return ResponseEntity.status(HttpStatus.OK).body(new LoginResponseDto(HttpStatus.OK.getReasonPhrase(),
                     userDto, jwtToken));
         } catch(BadCredentialsException ex) {

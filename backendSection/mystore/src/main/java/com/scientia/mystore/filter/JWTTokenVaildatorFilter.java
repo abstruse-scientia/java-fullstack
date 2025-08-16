@@ -2,6 +2,7 @@ package com.scientia.mystore.filter;
 
 import com.scientia.mystore.constants.ApplicationConstant;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -54,7 +55,12 @@ public class JWTTokenVaildatorFilter extends OncePerRequestFilter {
                     }
                 }
 
-            } catch (Exception exception) {
+            } catch (ExpiredJwtException exception) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token Expired");
+                return;
+            }
+            catch (Exception exception) {
                 throw new BadCredentialsException("Invalid Token received!");
             }
         }
