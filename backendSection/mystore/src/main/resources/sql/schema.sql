@@ -27,20 +27,19 @@ CREATE TABLE IF NOT EXISTS contacts
 
 
 
-CREATE TABLE IF NOT EXISTS customers
+CREATE TABLE IF NOT EXISTS contacts
 (
-    customer_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    contact_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(100)                          NOT NULL,
-    email         VARCHAR(100)                          NOT NULL UNIQUE,
+    email         VARCHAR(100)                          NOT NULL,
     mobile_number VARCHAR(15)                           NOT NULL,
-    password_hash VARCHAR(500)                          NOT NULL,
+    message       VARCHAR(500)                          NOT NULL,
+    status        VARCHAR(50)       NOT NULL,
     created_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by    VARCHAR(20)                           NOT NULL,
     updated_at    TIMESTAMP   DEFAULT NULL,
-    updated_by    VARCHAR(20) DEFAULT NULL,
-    UNIQUE KEY unique_email (email),
-    UNIQUE KEY unique_mobile_number (mobile_number)
-    );
+    updated_by    VARCHAR(20) DEFAULT NULL
+);
 
 CREATE TABLE IF NOT EXISTS address
 (

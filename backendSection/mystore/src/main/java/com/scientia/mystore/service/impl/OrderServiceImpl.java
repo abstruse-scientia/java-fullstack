@@ -1,7 +1,9 @@
 package com.scientia.mystore.service.impl;
 
 import com.scientia.mystore.constants.ApplicationConstant;
+import com.scientia.mystore.dto.OrderItemResponseDto;
 import com.scientia.mystore.dto.OrderRequestDto;
+import com.scientia.mystore.dto.OrderResponseDto;
 import com.scientia.mystore.entity.Customer;
 import com.scientia.mystore.entity.Order;
 import com.scientia.mystore.entity.OrderItem;
@@ -47,5 +49,52 @@ public class OrderServiceImpl implements IOrderService {
         order.setOrderItems(orderItems);
         orderRepository.save(order);
 
+    }
+
+    @Override
+    public List<OrderResponseDto> getCustomerOrders() {
+        Customer customer = profileService.getAuthenticatedCustomer();
+        List<Order> orders = orderRepository.findByCustomerOrderByCreatedAtDesc(customer);
+        return orders.stream().map(this::mapToOrderResponseDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * Map Order entity to OrderResponseDto
+     */
+    private OrderResponseDto mapToOrderResponseDTO(Order order) {
+        // Map Order Items
+        List<OrderItemResponseDto> itemDTOs = order.getOrderItems().stream()
+                .map(this::mapToOrderItemResponseDTO)
+                .collect(Collectors.toList());
+        OrderResponseDto orderResponseDto = new OrderResponseDto(order.getOrderId()
+                , order.getOrderStatus(), order.getTotalPrice(), order.getCreatedAt().toString()
+                , itemDTOs);
+        return orderResponseDto;
+    }
+
+    /**
+     * Map OrderItem entity to OrderItemResponseDto
+     */
+    private OrderItemResponseDto mapToOrderItemResponseDTO(OrderItem orderItem) {
+        OrderItemResponseDto itemDTO = new OrderItemResponseDto(
+                orderItem.getProduct().getName(), orderItem.getQuantity(),
+                orderItem.getPrice(), orderItem.getProduct().getImageUrl());
+        return itemDTO;
+    }
+
+
+    @Override
+    public List<OrderResponseDto> getAllPendingOrders() {
+        List<Order> orders = orderRepository.findByOrderStatus(ApplicationConstant.ORDER_STATUS_CREATED);
+        return orders.stream().map(this::mapToOrderResponseDTO).collect(Collectors.toList());
+    }
+
+
+
+    @Override
+    public Order updateOrderStatus(Long orderId, String orderStatus) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order", "OrderID", orderId.toString()));
+        order.setOrderStatus(orderStatus);
+        return orderRepository.save(order);
     }
 }
