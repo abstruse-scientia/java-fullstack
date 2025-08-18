@@ -14,6 +14,8 @@ import com.scientia.mystore.repository.ProductRepository;
 import com.scientia.mystore.service.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -92,9 +94,9 @@ public class OrderServiceImpl implements IOrderService {
 
 
     @Override
-    public Order updateOrderStatus(Long orderId, String orderStatus) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order", "OrderID", orderId.toString()));
-        order.setOrderStatus(orderStatus);
-        return orderRepository.save(order);
+    public void  updateOrderStatus(Long orderId, String orderStatus) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        orderRepository.updateOrderStatus(orderId, orderStatus, email);
     }
 }

@@ -6,6 +6,7 @@ import com.scientia.mystore.repository.ProductRepository;
 import com.scientia.mystore.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
     private final ProductRepository productRepository;
+    @Cacheable("products")
     @Override
     public List<ProductDto> getProducts() {
         return productRepository.findAll().stream()

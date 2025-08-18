@@ -12,10 +12,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Setter
 @Entity
 @Table(name = "address")
-@AttributeOverrides({
-        @AttributeOverride(name = "createdBy", column = @Column(name = "created_by", nullable = false, length = 20)),
-        @AttributeOverride(name = "updatedBy", column = @Column(name = "updated_by", length = 20))
-})
+
 public class Address extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

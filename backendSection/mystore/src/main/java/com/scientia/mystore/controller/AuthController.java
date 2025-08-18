@@ -5,6 +5,7 @@ import com.scientia.mystore.dto.*;
 import com.scientia.mystore.entity.Customer;
 import com.scientia.mystore.entity.Role;
 import com.scientia.mystore.repository.CustomerRepository;
+import com.scientia.mystore.repository.RoleRepository;
 import com.scientia.mystore.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final CustomerRepository customerRepository;
     private final CompromisedPasswordChecker compromisedPasswordChecker;
+    private final RoleRepository roleRepository;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> apiLogin(@RequestBody LoginRequestDto loginRequestDto) {
@@ -98,9 +100,7 @@ public class AuthController {
         Customer customer = new Customer();
         BeanUtils.copyProperties(registerRequestDto, customer);
         customer.setPasswordHash(passwordEncoder.encode(registerRequestDto.getPassword()));
-        Role role = new Role();
-        role.setName("ROLE_USER");
-        customer.setRoles(Set.of(role));
+        roleRepository.findByName("ROLE_USER").ifPresent(role -> customer.setRoles(Set.of(role)));
         customerRepository.save(customer);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
