@@ -4,12 +4,10 @@ import com.scientia.mystore.entity.Customer;
 import com.scientia.mystore.entity.Role;
 import com.scientia.mystore.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,14 +15,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-@Profile("prod")
-public class MyStoreUsernamePwdAuthenticationProvider implements AuthenticationProvider {
+@Profile("!prod")
+public class MyStoreNoProdUsernamePwdAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
@@ -38,11 +35,7 @@ public class MyStoreUsernamePwdAuthenticationProvider implements AuthenticationP
         );
         Set<Role> roles = customer.getRoles();
         List<SimpleGrantedAuthority> authorities = roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).toList();
-        if(passwordEncoder.matches(password, customer.getPasswordHash())){
-            return new UsernamePasswordAuthenticationToken(customer, null, authorities);
-        } else {
-            throw new BadCredentialsException("Invalid password");
-        }
+        return new  UsernamePasswordAuthenticationToken(customer, null, authorities);
     }
 
     @Override
